@@ -41,20 +41,27 @@ void timer_delay_ms(uint16_t ms){
 
 // Delay in microseconds
 void timer_delay_us(uint16_t us){
-    TIMER1_A = 0x00;
-    TIMER1_CNT = 0;
+    while(us > 0){
+        /* OCR is 16 bit, so at most 32767 us per compare */
+        uint16_t chunk = (us > 32767) ? 32767 : us;
 
-    TIMER1_OCR = (us * 2) - 1;
+        TIMER1_A = 0x00;
+        TIMER1_CNT = 0;
 
-    TIMER1_FLAG = (1 << 1);
+        TIMER1_OCR = (chunk * 2) - 1;
 
-    TIMER1_B = 0x0A;
+        TIMER1_FLAG = (1 << 1);
 
-    while(!(TIMER1_FLAG & (1 << 1)))
-    {
+        TIMER1_B = 0x0A;
+
+        while(!(TIMER1_FLAG & (1 << 1)))
+        {
+        }
+
+        TIMER1_B = 0x00;
+
+        us -= chunk;
     }
-
-    TIMER1_B = 0x00;
 }
 
 // Start Timer1

@@ -91,5 +91,4 @@ void lcd_set_cursor(uint8_t row, uint8_t column)
 void lcd_clear(void)
 {
     lcd_command(0x01);
-    timer_delay_ms(2);
 }

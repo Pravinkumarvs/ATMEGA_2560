@@ -1,22 +1,26 @@
 #include "gpio.h"
 
+#define SREG_REG (*(volatile uint8_t*)0x5F)
+
+#define GPIO_VALID(port, pin) ((uint8_t)(port) <= PORT_L && (pin) < 8)
+
 /* =========================
    DDR REGISTER ADDRESSES
    ========================= */
 
-volatile uint8_t* ddr[11] =
+static volatile uint8_t* const ddr[11] =
 {
-    (uint8_t*)0x21,    /* DDRA */
-    (uint8_t*)0x24,    /* DDRB */
-    (uint8_t*)0x27,    /* DDRC */
-    (uint8_t*)0x2A,    /* DDRD */
-    (uint8_t*)0x2D,    /* DDRE */
-    (uint8_t*)0x30,    /* DDRF */
-    (uint8_t*)0x33,    /* DDRG */
-    (uint8_t*)0x101,   /* DDRH */
-    (uint8_t*)0x104,   /* DDRJ */
-    (uint8_t*)0x107,   /* DDRK */
-    (uint8_t*)0x10A    /* DDRL */
+    (volatile uint8_t*)0x21,    /* DDRA */
+    (volatile uint8_t*)0x24,    /* DDRB */
+    (volatile uint8_t*)0x27,    /* DDRC */
+    (volatile uint8_t*)0x2A,    /* DDRD */
+    (volatile uint8_t*)0x2D,    /* DDRE */
+    (volatile uint8_t*)0x30,    /* DDRF */
+    (volatile uint8_t*)0x33,    /* DDRG */
+    (volatile uint8_t*)0x101,   /* DDRH */
+    (volatile uint8_t*)0x104,   /* DDRJ */
+    (volatile uint8_t*)0x107,   /* DDRK */
+    (volatile uint8_t*)0x10A    /* DDRL */
 };
 
 
@@ -24,19 +28,19 @@ volatile uint8_t* ddr[11] =
    PORT REGISTER ADDRESSES
    ========================= */
 
-volatile uint8_t* port_reg[11] =
+static volatile uint8_t* const port_reg[11] =
 {
-    (uint8_t*)0x22,    /* PORTA */
-    (uint8_t*)0x25,    /* PORTB */
-    (uint8_t*)0x28,    /* PORTC */
-    (uint8_t*)0x2B,    /* PORTD */
-    (uint8_t*)0x2E,    /* PORTE */
-    (uint8_t*)0x31,    /* PORTF */
-    (uint8_t*)0x34,    /* PORTG */
-    (uint8_t*)0x102,   /* PORTH */
-    (uint8_t*)0x105,   /* PORTJ */
-    (uint8_t*)0x108,   /* PORTK */
-    (uint8_t*)0x10B    /* PORTL */
+    (volatile uint8_t*)0x22,    /* PORTA */
+    (volatile uint8_t*)0x25,    /* PORTB */
+    (volatile uint8_t*)0x28,    /* PORTC */
+    (volatile uint8_t*)0x2B,    /* PORTD */
+    (volatile uint8_t*)0x2E,    /* PORTE */
+    (volatile uint8_t*)0x31,    /* PORTF */
+    (volatile uint8_t*)0x34,    /* PORTG */
+    (volatile uint8_t*)0x102,   /* PORTH */
+    (volatile uint8_t*)0x105,   /* PORTJ */
+    (volatile uint8_t*)0x108,   /* PORTK */
+    (volatile uint8_t*)0x10B    /* PORTL */
 };
 
 
@@ -44,19 +48,19 @@ volatile uint8_t* port_reg[11] =
    PIN REGISTER ADDRESSES
    ========================= */
 
-volatile uint8_t* pin_reg[11] =
+static volatile uint8_t* const pin_reg[11] =
 {
-    (uint8_t*)0x20,    /* PINA */
-    (uint8_t*)0x23,    /* PINB */
-    (uint8_t*)0x26,    /* PINC */
-    (uint8_t*)0x29,    /* PIND */
-    (uint8_t*)0x2C,    /* PINE */
-    (uint8_t*)0x2F,    /* PINF */
-    (uint8_t*)0x32,    /* PING */
-    (uint8_t*)0x100,   /* PINH */
-    (uint8_t*)0x103,   /* PINJ */
-    (uint8_t*)0x106,   /* PINK */
-    (uint8_t*)0x109    /* PINL */
+    (volatile uint8_t*)0x20,    /* PINA */
+    (volatile uint8_t*)0x23,    /* PINB */
+    (volatile uint8_t*)0x26,    /* PINC */
+    (volatile uint8_t*)0x29,    /* PIND */
+    (volatile uint8_t*)0x2C,    /* PINE */
+    (volatile uint8_t*)0x2F,    /* PINF */
+    (volatile uint8_t*)0x32,    /* PING */
+    (volatile uint8_t*)0x100,   /* PINH */
+    (volatile uint8_t*)0x103,   /* PINJ */
+    (volatile uint8_t*)0x106,   /* PINK */
+    (volatile uint8_t*)0x109    /* PINL */
 };
 
 
@@ -66,6 +70,13 @@ volatile uint8_t* pin_reg[11] =
 
 void gpio_mode(port_t port, uint8_t pin, uint8_t mode)
 {
+    if (!GPIO_VALID(port, pin))
+        return;
+
+    /* read-modify-write must not be interrupted by an ISR on the same port */
+    uint8_t sreg = SREG_REG;
+    __asm__ __volatile__ ("cli" ::: "memory");
+
     if (mode == OUTPUT)
     {
         *ddr[port] |= (uint8_t)(1 << pin);
@@ -74,6 +85,8 @@ void gpio_mode(port_t port, uint8_t pin, uint8_t mode)
     {
         *ddr[port] &= (uint8_t)~(1 << pin);
     }
+
+    SREG_REG = sreg;
 }
 
 
@@ -83,6 +96,12 @@ void gpio_mode(port_t port, uint8_t pin, uint8_t mode)
 
 void gpio_write(port_t port, uint8_t pin, uint8_t value)
 {
+    if (!GPIO_VALID(port, pin))
+        return;
+
+    uint8_t sreg = SREG_REG;
+    __asm__ __volatile__ ("cli" ::: "memory");
+
     if (value == HIGH)
     {
         *port_reg[port] |= (uint8_t)(1 << pin);
@@ -91,6 +110,8 @@ void gpio_write(port_t port, uint8_t pin, uint8_t value)
     {
         *port_reg[port] &= (uint8_t)~(1 << pin);
     }
+
+    SREG_REG = sreg;
 }
 
 
@@ -100,6 +121,9 @@ void gpio_write(port_t port, uint8_t pin, uint8_t value)
 
 uint8_t gpio_read(port_t port, uint8_t pin)
 {
+    if (!GPIO_VALID(port, pin))
+        return LOW;
+
     return ((*pin_reg[port] & (uint8_t)(1 << pin)) != 0);
 }
 
