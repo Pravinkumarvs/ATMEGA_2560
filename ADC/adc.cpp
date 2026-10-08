@@ -1,11 +1,5 @@
 #include "adc.h"
 
-#define ADCL_REG   (*(volatile uint8_t*)0x78)
-#define ADCH_REG   (*(volatile uint8_t*)0x79)
-#define ADCSRA_REG (*(volatile uint8_t*)0x7A)
-#define ADCSRB_REG (*(volatile uint8_t*)0x7B)
-#define ADMUX_REG  (*(volatile uint8_t*)0x7C)
-
 void adc_init(void)
 {
     ADMUX_REG = 0x40;
