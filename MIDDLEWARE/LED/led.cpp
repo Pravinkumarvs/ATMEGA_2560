@@ -1,39 +1,35 @@
 #include "led.h"
 
-static port_t led_port;
-static uint8_t led_pin;
-static uint8_t led_state;
-
-void led_init(port_t port, uint8_t pin)
+void led_init(led_t *led, port_t port, uint8_t pin)
 {
-    led_port = port;
-    led_pin = pin;
-    led_state = LOW;
+    led->port = port;
+    led->pin = pin;
+    led->state = LOW;
 
-    gpio_mode(led_port, led_pin, OUTPUT);
-    gpio_write(led_port, led_pin, LOW);
+    gpio_mode(led->port, led->pin, OUTPUT);
+    gpio_write(led->port, led->pin, LOW);
 }
 
-void led_on(void)
+void led_on(led_t *led)
 {
-    gpio_write(led_port, led_pin, HIGH);
-    led_state = HIGH;
+    gpio_write(led->port, led->pin, HIGH);
+    led->state = HIGH;
 }
 
-void led_off(void)
+void led_off(led_t *led)
 {
-    gpio_write(led_port, led_pin, LOW);
-    led_state = LOW;
+    gpio_write(led->port, led->pin, LOW);
+    led->state = LOW;
 }
 
-void led_toggle(void)
+void led_toggle(led_t *led)
 {
-    if(led_state == LOW)
+    if(led->state == LOW)
     {
-        led_on();
+        led_on(led);
     }
     else
     {
-        led_off();
+        led_off(led);
     }
 }
