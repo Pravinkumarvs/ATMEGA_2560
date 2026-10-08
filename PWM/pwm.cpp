@@ -2,13 +2,36 @@
 #include "pwm.h"
 #include <avr/io.h>
 
+static uint8_t pwm_running;
+
+static void pwm_connect(void)
+{
+    /*
+     * Non-inverting PWM
+     * COM4A1:0 = 10
+     */
+    TCCR4A &= ~((1 << COM4A1) |
+                (1 << COM4A0));
+
+    TCCR4A |= (1 << COM4A1);
+}
+
+static void pwm_disconnect(void)
+{
+    TCCR4A &= ~((1 << COM4A1) |
+                (1 << COM4A0));
+
+    /* Output LOW */
+    gpio_write(PORT_H, 3, 0);
+}
+
 void pwm_init(void)
 {
-    /* OC4A = PE3 = Arduino Mega D5 */
-    gpio_mode(PORT_E, 3, OUTPUT);
+    /* OC4A = PH3 = Arduino Mega D6 */
+    gpio_mode(PORT_H, 3, OUTPUT);
 
     /* Initially LOW */
-    gpio_write(PORT_E, 3, 0);
+    gpio_write(PORT_H, 3, 0);
 
     /* Stop Timer4 */
     TCCR4A = 0;
@@ -31,6 +54,8 @@ void pwm_init(void)
 
     /* 0% duty initially */
     OCR4A = 0;
+
+    pwm_running = 0;
 }
 
 
@@ -40,19 +65,24 @@ void pwm_set_duty(unsigned char duty)
         duty = 100;
 
     OCR4A = ((unsigned long)duty * ICR4) / 100;
+
+    /*
+     * OCR4A = 0 still gives a 1-tick spike every period,
+     * so detach the pin for a true 0%
+     */
+    if (duty == 0)
+        pwm_disconnect();
+    else if (pwm_running)
+        pwm_connect();
 }
 
 
 void pwm_on(void)
 {
-    /*
-     * Non-inverting PWM
-     * COM4A1:0 = 10
-     */
-    TCCR4A &= ~((1 << COM4A1) |
-                (1 << COM4A0));
+    pwm_running = 1;
 
-    TCCR4A |= (1 << COM4A1);
+    if (OCR4A != 0)
+        pwm_connect();
 
     /*
      * Prescaler = 8
@@ -68,15 +98,12 @@ void pwm_on(void)
 
 void pwm_off(void)
 {
-    /* Disconnect PWM */
-    TCCR4A &= ~((1 << COM4A1) |
-                (1 << COM4A0));
+    pwm_running = 0;
 
     /* Stop Timer4 */
     TCCR4B &= ~((1 << CS42) |
                 (1 << CS41) |
                 (1 << CS40));
 
-    /* Output LOW */
-    gpio_write(PORT_E, 3, 0);
+    pwm_disconnect();
 }
