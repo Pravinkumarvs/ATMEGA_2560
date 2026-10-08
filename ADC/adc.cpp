@@ -1,0 +1,41 @@
+#include "adc.h"
+
+#define ADCL_REG   (*(volatile uint8_t*)0x78)
+#define ADCH_REG   (*(volatile uint8_t*)0x79)
+#define ADCSRA_REG (*(volatile uint8_t*)0x7A)
+#define ADCSRB_REG (*(volatile uint8_t*)0x7B)
+#define ADMUX_REG  (*(volatile uint8_t*)0x7C)
+
+void adc_init(void)
+{
+    ADMUX_REG = 0x40;
+    ADCSRB_REG = 0x00;
+    ADCSRA_REG = 0x87;
+}
+
+uint16_t adc_read(uint8_t channel)
+{
+    uint16_t value;
+
+    ADMUX_REG = 0x40 | (channel & 0x07);
+
+    if(channel >= 8)
+    {
+        ADCSRB_REG = 0x08;
+    }
+    else
+    {
+        ADCSRB_REG = 0x00;
+    }
+
+    ADCSRA_REG |= (1 << 6);
+
+    while(ADCSRA_REG & (1 << 6))
+    {
+    }
+
+    value = ADCL_REG;
+    value |= ((uint16_t)ADCH_REG << 8);
+
+    return value;
+}
