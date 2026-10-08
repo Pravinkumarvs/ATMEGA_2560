@@ -15,15 +15,21 @@
 #define TIMER1_INT   (*(volatile uint8_t*)0x6F)   // Timer1 Interrupt Control
 #define TIMER1_FLAG  (*(volatile uint8_t*)0x36)   // Timer1 Interrupt Flag
 
-/* TIMER DELAY FUNCTIONS */
-void timer_delay_s(uint16_t s);       // Delay in seconds
-void timer_delay_ms(uint16_t ms);     // Delay in milliseconds
-void timer_delay_us(uint16_t us);     // Delay in microseconds
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Timer control functions
+void timer_delay_s(uint16_t s);
+void timer_delay_ms(uint16_t ms);
+void timer_delay_us(uint16_t us);
+
 void timer_start(void);
 void timer_stop(void);
 void timer_reset(void);
 uint16_t timer_get_count(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
