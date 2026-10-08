@@ -15,6 +15,12 @@
 #define TIMER1_INT   (*(volatile uint8_t*)0x6F)   // Timer1 Interrupt Control
 #define TIMER1_FLAG  (*(volatile uint8_t*)0x36)   // Timer1 Interrupt Flag
 
+/*
+ * NOTE: every function below uses Timer1. Do not call a delay while a
+ * timer_start()/timer_stop() measurement is running (e.g. ultra_getDistance),
+ * and do not use them from an ISR while main code is using them.
+ */
+
 /* TIMER DELAY FUNCTIONS */
 void timer_delay_s(uint16_t s);       // Delay in seconds
 void timer_delay_ms(uint16_t ms);     // Delay in milliseconds
