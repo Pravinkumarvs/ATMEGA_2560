@@ -15,12 +15,15 @@
 #define ULTRA_ECHO_PORT PORT_B
 #define ULTRA_ECHO_PIN  6
 
-/* ==========================
-   FUNCTION PROTOTYPES
-   ========================== */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void ultra_init(void);
-
 uint16_t ultra_getDistance(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
