@@ -1,19 +1,19 @@
 #include "switch.h"
 
-static port_t switch_port;
-static uint8_t switch_pin;
-
-void switch_init(port_t port, uint8_t pin)
+void switch_init(switch_t *sw, port_t port, uint8_t pin)
 {
-    switch_port = port;
-    switch_pin = pin;
+    sw->port = port;
+    sw->pin = pin;
 
-    gpio_mode(switch_port, switch_pin, INPUT);
+    gpio_mode(sw->port, sw->pin, INPUT);
+
+    /* enable internal pull-up */
+    gpio_write(sw->port, sw->pin, HIGH);
 }
 
-uint8_t switch_read(void)
+uint8_t switch_read(switch_t *sw)
 {
-    if(gpio_read(switch_port, switch_pin) == HIGH)
+    if(gpio_read(sw->port, sw->pin) == LOW)
     {
         return SWITCH_PRESSED;
     }
