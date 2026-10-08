@@ -1,13 +1,15 @@
 #ifndef ADC_H
 #define ADC_H
 
+#include <stdint.h>
+
 #define ADCL_REG   (*(volatile uint8_t*)0x78)
 #define ADCH_REG   (*(volatile uint8_t*)0x79)
 #define ADCSRA_REG (*(volatile uint8_t*)0x7A)
 #define ADCSRB_REG (*(volatile uint8_t*)0x7B)
 #define ADMUX_REG  (*(volatile uint8_t*)0x7C)
 
-#include <stdint.h>
+
 
 #define ADC0   0
 #define ADC1   1
