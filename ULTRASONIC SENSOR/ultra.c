@@ -29,17 +29,14 @@ void ultra_init(void)
     );
 }
 
-
 /* ==========================
-   DISTANCE
+   DISTANCE MEASUREMENT
    ========================== */
 
 uint16_t ultra_getDistance(void)
 {
     uint16_t timer_count;
-
     uint32_t time_us;
-
     uint16_t distance;
 
     /* ------------------
@@ -65,13 +62,14 @@ uint16_t ultra_getDistance(void)
     gpio_write(
         ULTRA_TRIG_PORT,
         ULTRA_TRIG_PIN,
-        LOW);
+        LOW
+    );
 
     /* ------------------
        Wait for Echo HIGH
        ------------------ */
 
-    while(
+    while (
         gpio_read(
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
@@ -88,7 +86,7 @@ uint16_t ultra_getDistance(void)
        Wait for Echo LOW
        ------------------ */
 
-    while(
+    while (
         gpio_read(
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
@@ -102,19 +100,19 @@ uint16_t ultra_getDistance(void)
     timer_stop();
 
     /* ------------------
-       Read Count
+       Read Timer Count
        ------------------ */
 
     timer_count = timer_get_count();
 
     /*
-    Each count = 0.5 us
+       Each timer count = 0.5 us
     */
 
     time_us = timer_count / 2;
 
     /*
-    Distance = time / 58
+       Distance in cm = time / 58
     */
 
     distance = time_us / 58;

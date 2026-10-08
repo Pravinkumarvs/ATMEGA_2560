@@ -1,26 +1,26 @@
-#ifndef ULTRASONIC_H
-#define ULTRASONIC_H
+#ifndef ULTRA_H
+#define ULTRA_H
 
 #include <stdint.h>
 #include "gpio.h"
 #include "timer.h"
 
-/* --------------------------
-   Pin Configuration
-   -------------------------- */
+/* ==========================
+   ULTRASONIC PIN CONFIGURATION
+   ========================== */
 
-#define TRIG_PORT PORT_B
-#define TRIG_PIN  7
+#define ULTRA_TRIG_PORT PORT_B
+#define ULTRA_TRIG_PIN  7
 
-#define ECHO_PORT PORT_B
-#define ECHO_PIN  6
+#define ULTRA_ECHO_PORT PORT_B
+#define ULTRA_ECHO_PIN  6
 
-/* --------------------------
-   Function Prototypes
-   -------------------------- */
+/* ==========================
+   FUNCTION PROTOTYPES
+   ========================== */
 
-void ultrasonic_init(void);
+void ultra_init(void);
 
-uint16_t ultrasonic_getDistance(void);
+uint16_t ultra_getDistance(void);
 
 #endif
