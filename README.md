@@ -24,10 +24,10 @@ Bare-metal drivers for the ATmega2560 (Arduino Mega), 16 MHz.
 The folder names contain spaces, so quote the include paths:
 
 ```sh
-avr-g++ -mmcu=atmega2560 -DF_CPU=16000000UL -Os \
+avr-gcc -mmcu=atmega2560 -DF_CPU=16000000UL -Os \
   -IGPIO -ITIMER -IADC -IPWM "-IEXTERNAL INTERRUPT" "-IIR SENSOR" "-IULTRASONIC SENSOR" \
   -IMIDDLEWARE/LED -IMIDDLEWARE/SWITCH -IMIDDLEWARE/KEYPAD -IMIDDLEWARE/LCD -IMIDDLEWARE/7-SEGMENT \
-  main.cpp GPIO/gpio.cpp TIMER/timer.cpp ... -o app.elf
+  main.c GPIO/gpio.c TIMER/timer.c ... -o app.elf
 avr-objcopy -O ihex app.elf app.hex
 avrdude -p m2560 -c wiring -P /dev/ttyACM0 -b 115200 -D -U flash:w:app.hex
 ```
