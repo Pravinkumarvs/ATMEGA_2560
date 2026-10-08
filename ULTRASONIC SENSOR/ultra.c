@@ -71,29 +71,42 @@ uint16_t ultra_getDistance(void)
        Wait for Echo HIGH
        ------------------ */
 
+    timer_reset();
+    timer_start();
+
     while(
         gpio_read(
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
         ) == LOW
-    );
+    )
+    {
+        if(timer_get_count() >= ULTRA_TIMEOUT_COUNT)
+        {
+            timer_stop();
+            return ULTRA_NO_ECHO;
+        }
+    }
 
     /* ------------------
-       Start Timer
+       Time the Echo pulse
        ------------------ */
 
-    timer_start();
-
-    /* ------------------
-       Wait for Echo LOW
-       ------------------ */
+    timer_reset();
 
     while(
         gpio_read(
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
         ) == HIGH
-    );
+    )
+    {
+        if(timer_get_count() >= ULTRA_TIMEOUT_COUNT)
+        {
+            timer_stop();
+            return ULTRA_NO_ECHO;
+        }
+    }
 
     /* ------------------
        Stop Timer
@@ -108,14 +121,10 @@ uint16_t ultra_getDistance(void)
     timer_count = timer_get_count();
 
     /*
-    Each count = 0.5 us
+    Each count = 0.5 us, distance = time_us / 58
     */
 
     time_us = timer_count / 2;
-
-    /*
-    Distance = time / 58
-    */
 
     distance = time_us / 58;
 
