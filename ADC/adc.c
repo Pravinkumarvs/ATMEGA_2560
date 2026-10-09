@@ -11,6 +11,11 @@ uint16_t adc_read(uint8_t channel)
 {
     uint16_t value;
 
+    if(channel > 15)
+    {
+        return 0;
+    }
+
     ADMUX_REG = 0x40 | (channel & 0x07);
 
     if(channel >= 8)

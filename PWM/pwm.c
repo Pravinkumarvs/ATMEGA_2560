@@ -4,33 +4,33 @@
 
 void pwm_init(void)
 {
-    /* OC4A = PE3 = Arduino Mega D5 */
+    /* OC3A = PE3 = Arduino Mega D5 (OC4A is PH3/D6, so Timer3 is used) */
     gpio_mode(PORT_E, 3, OUTPUT);
 
     /* Initially LOW */
     gpio_write(PORT_E, 3, 0);
 
-    /* Stop Timer4 */
-    TCCR4A = 0;
-    TCCR4B = 0;
+    /* Stop Timer3 */
+    TCCR3A = 0;
+    TCCR3B = 0;
 
     /*
      * Fast PWM Mode 14
-     * TOP = ICR4
+     * TOP = ICR3
      */
-    TCCR4A |= (1 << WGM41);
+    TCCR3A |= (1 << WGM31);
 
-    TCCR4B |= (1 << WGM43) |
-              (1 << WGM42);
+    TCCR3B |= (1 << WGM33) |
+              (1 << WGM32);
 
     /*
      * 16 MHz / (8 × (999 + 1))
      * = 2 kHz
      */
-    ICR4 = 999;
+    ICR3 = 999;
 
     /* 0% duty initially */
-    OCR4A = 0;
+    OCR3A = 0;
 }
 
 
@@ -39,7 +39,7 @@ void pwm_set_duty(unsigned char duty)
     if (duty > 100)
         duty = 100;
 
-    OCR4A = ((unsigned long)duty * ICR4) / 100;
+    OCR3A = ((unsigned long)duty * ICR3) / 100;
 }
 
 
@@ -47,35 +47,35 @@ void pwm_on(void)
 {
     /*
      * Non-inverting PWM
-     * COM4A1:0 = 10
+     * COM3A1:0 = 10
      */
-    TCCR4A &= ~((1 << COM4A1) |
-                (1 << COM4A0));
+    TCCR3A &= ~((1 << COM3A1) |
+                (1 << COM3A0));
 
-    TCCR4A |= (1 << COM4A1);
+    TCCR3A |= (1 << COM3A1);
 
     /*
      * Prescaler = 8
-     * CS42:0 = 010
+     * CS32:0 = 010
      */
-    TCCR4B &= ~((1 << CS42) |
-                (1 << CS41) |
-                (1 << CS40));
+    TCCR3B &= ~((1 << CS32) |
+                (1 << CS31) |
+                (1 << CS30));
 
-    TCCR4B |= (1 << CS41);
+    TCCR3B |= (1 << CS31);
 }
 
 
 void pwm_off(void)
 {
     /* Disconnect PWM */
-    TCCR4A &= ~((1 << COM4A1) |
-                (1 << COM4A0));
+    TCCR3A &= ~((1 << COM3A1) |
+                (1 << COM3A0));
 
-    /* Stop Timer4 */
-    TCCR4B &= ~((1 << CS42) |
-                (1 << CS41) |
-                (1 << CS40));
+    /* Stop Timer3 */
+    TCCR3B &= ~((1 << CS32) |
+                (1 << CS31) |
+                (1 << CS30));
 
     /* Output LOW */
     gpio_write(PORT_E, 3, 0);
