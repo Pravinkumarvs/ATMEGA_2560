@@ -1,3 +1,4 @@
+
 #ifndef IR_H
 #define IR_H
 
@@ -9,8 +10,16 @@
 
 #define IR_THRESHOLD    512
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void ir_init(uint8_t channel);
 uint16_t ir_get_value(void);
 uint8_t ir_read(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
