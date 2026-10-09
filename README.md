@@ -182,7 +182,7 @@ Example with `PORT_A`:
 | dp | PA7 | D29 |
 | COM | GND | (common cathode) |
 
-- Put a **220 Ω resistor on each segment line**, none on the COM pin.
+- Put a **1 kΩ resistor on each segment line** (680 Ω if too dim), none on the COM pin. Lower values can exceed the ~100 mA limit for the whole port when all 8 segments are on.
 - For a common-anode display use `a_segment()` and connect COM to 5V.
 
 ## LED
