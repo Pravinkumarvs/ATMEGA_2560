@@ -67,23 +67,38 @@ uint16_t ultra_getDistance(void)
 
     /* ------------------
        Wait for Echo HIGH
+       (30 ms timeout so a missing sensor cannot hang the program)
        ------------------ */
+
+    timer_reset();
+    timer_start();
 
     while (
         gpio_read(
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
         ) == LOW
-    );
+    )
+    {
+        if (timer_get_count() >= ULTRA_TIMEOUT_COUNT)
+        {
+            timer_stop();
+            return ULTRA_NO_ECHO;
+        }
+    }
 
     /* ------------------
-       Start Timer
+       Start Timer from zero
        ------------------ */
 
+    timer_stop();
+    timer_reset();
     timer_start();
 
     /* ------------------
        Wait for Echo LOW
+       (with no object the echo lasts ~38 ms, which would
+       overflow the 16-bit count, so stop at 30 ms)
        ------------------ */
 
     while (
@@ -91,7 +106,14 @@ uint16_t ultra_getDistance(void)
             ULTRA_ECHO_PORT,
             ULTRA_ECHO_PIN
         ) == HIGH
-    );
+    )
+    {
+        if (timer_get_count() >= ULTRA_TIMEOUT_COUNT)
+        {
+            timer_stop();
+            return ULTRA_NO_ECHO;
+        }
+    }
 
     /* ------------------
        Stop Timer

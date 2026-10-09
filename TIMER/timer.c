@@ -41,6 +41,18 @@ void timer_delay_ms(uint16_t ms){
 
 // Delay in microseconds
 void timer_delay_us(uint16_t us){
+    if(us == 0)
+    {
+        return;
+    }
+
+    /* OCR is 16-bit: 0.5 us per count allows at most 32767 us */
+    if(us > 32767)
+    {
+        timer_delay_us(us - 32767);
+        us = 32767;
+    }
+
     TIMER1_A = 0x00;
     TIMER1_CNT = 0;
 
@@ -74,6 +86,7 @@ void timer_stop(void)
 void timer_reset(void)
 {
     TIMER1_CNT = 0;
+    TIMER1_FLAG = (1 << 0);
 }
 
 // Get Timer1 count
