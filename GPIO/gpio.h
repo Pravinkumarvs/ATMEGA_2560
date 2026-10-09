@@ -1,3 +1,4 @@
+
 #ifndef GPIO_H
 #define GPIO_H
 
@@ -34,6 +35,10 @@ typedef enum
 #define HIGH    1
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* =========================
    FUNCTION DECLARATIONS
    ========================= */
@@ -47,5 +52,8 @@ uint8_t gpio_read(port_t port, uint8_t pin);
 void mydelayh(long count);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
