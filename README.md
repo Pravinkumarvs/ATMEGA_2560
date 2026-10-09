@@ -65,6 +65,9 @@ ATMEGA_2560/
 ├── APP/
 │   └── main.c      (LCD test application)
 │
+├── docs/
+│   └── Smart_Parking_Pin_Connections.pdf
+│
 ├── Makefile
 ├── PWM/
 │   ├── pwm.c
@@ -84,6 +87,8 @@ ATMEGA_2560/
 ---
 
 # 🔌 Pin Connections (Arduino Mega 2560)
+
+A printable version of this section is in [docs/Smart_Parking_Pin_Connections.pdf](docs/Smart_Parking_Pin_Connections.pdf).
 
 All modules must share **one common GND** with the Mega. Power the modules from the Mega **5V** pin.
 
