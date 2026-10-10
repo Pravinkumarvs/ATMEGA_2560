@@ -12,7 +12,7 @@
 #define TIMER1_OCR   (*(volatile uint16_t*)0x88)   // Timer1 Output Compare
 
 /* TIMER1 INTERRUPT AND FLAG REGISTERS */
-#define TIMER1_INT   (*(volatile uint8_t*)0x6F)   // Timer1 Interrupt Control
+
 #define TIMER1_FLAG  (*(volatile uint8_t*)0x36)   // Timer1 Interrupt Flag
 
 #ifdef __cplusplus
