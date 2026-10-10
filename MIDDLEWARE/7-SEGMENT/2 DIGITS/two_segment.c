@@ -20,12 +20,26 @@ static const uint8_t digit_code[10] =
     0x6D, 0x7D, 0x07, 0x7F, 0x6F
 };
 
+/* Custom segment patterns for special display */
+#define HH_PATTERN 0x73
+
 static void write_segments(uint8_t value)
 {
+    uint8_t pattern;
+
+    if (value == 10)
+    {
+        pattern = 0x73;  // Your HH segment pattern
+    }
+    else
+    {
+        pattern = digit_code[value];
+    }
+
     for (uint8_t pin = 0; pin < 8; pin++)
     {
         gpio_write(segment_port, pin,
-                   (digit_code[value] >> pin) & 1);
+                   (pattern >> pin) & 1);
     }
 }
 
@@ -46,7 +60,7 @@ void two_segment_init(port_t seg_port,
     gpio_mode(select_port, dig1_pin, OUTPUT);
     gpio_mode(select_port, dig2_pin, OUTPUT);
 
-    /* Both digits OFF (common cathode selection) */
+    /* Both digits OFF */
     gpio_write(select_port, dig1_pin, HIGH);
     gpio_write(select_port, dig2_pin, HIGH);
 
@@ -55,31 +69,21 @@ void two_segment_init(port_t seg_port,
     current_digit = 0;
 }
 
+
+
 void two_segment_display(uint8_t number)
 {
-    if (number > 99)
-        number = 99;
-
-    tens = number / 10;
-    units = number % 10;
-}
-
-void two_segment_refresh(void)
-{
-    /* Disable both digits before changing segments */
-    gpio_write(select_port, dig1_pin, HIGH);
-    gpio_write(select_port, dig2_pin, HIGH);
-
-    if (current_digit == 0)
+    if (number == 100)
     {
-        write_segments(tens);
-        gpio_write(select_port, dig1_pin, LOW);
-        current_digit = 1;
+        tens = 10;   // Special HH marker
+        units = 10;  // Special HH marker
     }
     else
     {
-        write_segments(units);
-        gpio_write(select_port, dig2_pin, LOW);
-        current_digit = 0;
+        if (number > 99)
+            number = 99;
+
+        tens = number / 10;
+        units = number % 10;
     }
 }
