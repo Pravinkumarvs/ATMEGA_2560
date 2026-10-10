@@ -17,6 +17,7 @@ extern "C" {
 void ir_init(uint8_t channel);
 uint16_t ir_get_value(void);
 uint8_t ir_read(void);
+void update_ir_states(void);
 
 #ifdef __cplusplus
 }

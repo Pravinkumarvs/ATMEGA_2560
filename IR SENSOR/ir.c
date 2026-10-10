@@ -29,3 +29,5 @@ uint8_t ir_read(void)
         return SLOT_AVAILABLE;
     }
 }
+
+/* ========== IR SENSOR DEBOUNCE ========== */
