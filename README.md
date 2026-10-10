@@ -1,45 +1,47 @@
-# ATmega2560 Driver Development
+# ATMEGA_2560 Driver Development
 
-A modular low-level driver development project for the **ATmega2560 microcontroller**.
+A modular embedded software project for the ATmega2560 microcontroller, focused on building reusable low-level device drivers using direct register access instead of relying on high-level Arduino abstractions.
 
-The purpose of this repository is to develop and test reusable hardware drivers by directly accessing microcontroller registers instead of depending completely on high-level Arduino functions.
+This repository demonstrates a clean layered embedded architecture where hardware-specific register programming is isolated behind driver APIs, making the system more maintainable, testable, and scalable.
 
 ---
 
-## 📌 Project Overview
+## Overview
 
-This project focuses on building a layered embedded software architecture for the ATmega2560.
+The goal of this project is to design and implement robust drivers for common peripherals used in embedded systems. Each driver is developed to expose simple, reusable functions while keeping low-level hardware access encapsulated in dedicated source files.
 
-The drivers provide simple functions to control and communicate with hardware peripherals.
+By separating the application layer, middleware layer, and hardware abstraction layer, the project shows a professional approach to embedded systems design.
 
 ### Architecture
 
 ```text
-Application
-     │
-     ▼
+Application Layer
+      │
+      ▼
 Middleware / Device Drivers
-     │
-     ├── LED
-     ├── Switch
-     ├── IR Sensor
-     ├── Ultrasonic Sensor
-     ├── ADC
-     ├── PWM
-     └── Timer
-     │
-     ▼
-GPIO / Hardware Registers
-     │
-     ▼
-ATmega2560
+      │
+      ├── GPIO
+      ├── ADC
+      ├── PWM
+      ├── Timer
+      ├── IR Sensor
+      ├── Ultrasonic Sensor
+      ├── LED
+      ├── Switch
+      └── 7-Segment Display
+      │
+      ▼
+ATmega2560 Hardware Registers
+      │
+      ▼
+Microcontroller Peripherals
 ```
 
-The main objective is to keep the application independent from low-level register operations.
+This layered design keeps application code independent from register-level implementation details.
 
 ---
 
-# 📂 Repository Structure
+## Repository Structure
 
 ```text
 ATMEGA_2560/
@@ -57,10 +59,11 @@ ATMEGA_2560/
 │   └── ir.h
 │
 ├── MIDDLEWARE/
-│    ├── led.c
-│    ├── 7-segemnt.c
-|    ├── switch.c
-|
+│   ├── led.c
+│   ├── switch.c
+│   ├── seven_segment.c
+│   └── seven_segment.h
+│
 ├── PWM/
 │   ├── pwm.c
 │   └── pwm.h
@@ -73,229 +76,141 @@ ATMEGA_2560/
 │   ├── ultra.c
 │   └── ultra.h
 │
-└── README.md
+├── LICENSE
+├── .gitignore
+├── README.md
+└── docs/
+    └── architecture.md
 ```
 
 ---
 
-# 🔧 Drivers
+## Features
 
-## 1. GPIO Driver
+- Direct register-level access for ATmega2560 peripherals
+- Modular and reusable driver architecture
+- Simplified application-level APIs
+- Support for common embedded peripherals
+- Hardware abstraction for cleaner software design
+- Easy maintenance and debugging
+- Suitable for learning embedded driver development and low-level programming
 
-The GPIO driver provides low-level control of the ATmega2560 GPIO ports.
+---
 
-### Main role
+## Driver Modules
 
-- Configure pins as input or output
-- Write digital values
-- Read digital values
-- Access GPIO hardware through registers
+### 1. GPIO Driver
 
-### Basic concept
+The GPIO driver manages input/output configuration and pin-level control for the ATmega2560.
 
-```text
-Application
-     ↓
-GPIO Driver
-     ↓
-GPIO Registers
-     ↓
-ATmega2560 Pin
+Key responsibilities:
+- Set pins as input or output
+- Write digital HIGH/LOW values
+- Read digital pin status
+- Access port registers safely
+
+Example usage:
+
+```c
+gpio_pin_mode(PORTB, PIN5, OUTPUT);
+gpio_write_pin(PORTB, PIN5, HIGH);
 ```
 
 ---
 
-# 2. ADC Driver
+### 2. ADC Driver
 
-The ADC driver handles analog-to-digital conversion.
+The ADC driver converts analog sensor signals into digital values for processing by the microcontroller.
 
-### Main role
+Key responsibilities:
+- Initialize ADC hardware
+- Select ADC channels
+- Read analog values
+- Return digital conversion results
 
-It converts an analog voltage from a sensor into a digital value that can be processed by the microcontroller.
-
-### Basic flow
-
-```text
-Analog Sensor
-      ↓
-     ADC
-      ↓
-Digital Value
-      ↓
-Application
-```
-
-### Main functions
+Example:
 
 ```c
 adc_init();
-adc_read(channel);
+uint16_t value = adc_read(ADC_CHANNEL_0);
 ```
-
-The driver supports ADC channel selection and returns the converted digital value.
 
 ---
 
-# 3. Timer Driver
+### 3. Timer Driver
 
-The Timer driver provides hardware-based timing functions using Timer1.
+The timer driver provides hardware timing functions required for delay generation, pulse measurement, and periodic tasks.
 
-### Main role
-
+Key responsibilities:
+- Start and stop timers
+- Reset timer counters
 - Generate delays
-- Start and stop the timer
-- Reset the timer
-- Read the current timer count
+- Measure time intervals
 
-### Delay functions
-
-```c
-timer_delay_s();
-timer_delay_ms();
-timer_delay_us();
-```
-
-### Timer control
+Example:
 
 ```c
 timer_start();
+timer_delay_ms(500);
 timer_stop();
-timer_reset();
-timer_get_count();
-```
-
-### Basic flow
-
-```text
-Configure Timer
-      ↓
-Start Timer
-      ↓
-Count Clock Cycles
-      ↓
-Compare / Flag
-      ↓
-Stop Timer
-```
-
-The timer driver is also used by the ultrasonic sensor driver for measuring echo pulse duration.
-
----
-
-# 4. PWM Driver
-
-The PWM driver provides pulse-width modulation functionality.
-
-### Main role
-
-PWM can be used to control:
-
-- Motor speed
-- LED brightness
-- Actuator output
-- Other variable-duty-cycle applications
-
-### Basic concept
-
-```text
-PWM Signal
-     ↓
-Duty Cycle
-     ↓
-Controlled Output
 ```
 
 ---
 
-# 5. IR Sensor Driver
+### 4. PWM Driver
 
-The IR sensor driver uses the ADC driver to process the sensor output.
+The PWM driver generates pulse-width modulated signals used in motor control and LED brightness control.
 
-### Main role
+Common applications:
+- Motor speed control
+- LED dimming
+- Actuator control
+- Signal generation
 
-The raw ADC value is converted into a meaningful status.
+---
 
-```text
-IR Sensor
-    ↓
-ADC Driver
-    ↓
-Raw ADC Value
-    ↓
-IR Driver
-    ↓
-SLOT AVAILABLE / SLOT OCCUPIED
-```
+### 5. IR Sensor Driver
 
-### Main functions
+The IR sensor driver reads reflected or detected signal values and converts them into useful logic-level output.
+
+Typical behavior:
+- Read raw analog/digital sensor value
+- Compare against threshold
+- Determine whether a slot is occupied or free
+
+Example:
 
 ```c
 ir_init();
-ir_get_value();
-ir_read();
+uint8_t status = ir_read();
 ```
-
-A threshold is used to determine the sensor status.
 
 ---
 
-# 6. Ultrasonic Sensor Driver
+### 6. Ultrasonic Sensor Driver
 
-The ultrasonic driver is used to measure distance using an ultrasonic sensor such as the HC-SR04.
+The ultrasonic driver measures distance using echo timing from a sensor such as HC-SR04.
 
-### Pin configuration
+Key steps:
+- Trigger the sensor
+- Wait for echo pulse
+- Measure time duration
+- Convert time to distance
 
-```text
-TRIG → PORT B, Pin 7
-ECHO → PORT B, Pin 6
-```
-
-### Measurement process
-
-```text
-TRIG HIGH
-   ↓
-10 µs pulse
-   ↓
-Ultrasonic sensor sends sound
-   ↓
-Wait for ECHO HIGH
-   ↓
-Start Timer
-   ↓
-Wait for ECHO LOW
-   ↓
-Stop Timer
-   ↓
-Read Timer Count
-   ↓
-Calculate Distance
-```
-
-### Distance calculation
-
-The driver uses:
-
-```text
-Time → Distance
-```
-
-and calculates distance in centimeters using the measured echo time.
-
-### Main functions
+Example:
 
 ```c
 ultra_init();
-ultra_getDistance();
+float distance_cm = ultra_getDistance();
 ```
 
 ---
 
-# 🧩 Middleware
+## Middleware Layer
 
-The middleware layer is used to build higher-level functionality using the low-level drivers.
+The middleware layer simplifies application development by abstracting hardware access behind user-friendly function calls.
 
-Instead of directly accessing registers, middleware can use functions such as:
+Examples:
 
 ```c
 led_on();
@@ -307,147 +222,125 @@ ir_read();
 
 ultra_getDistance();
 
-timer_delay_ms();
+timer_delay_ms(500);
 ```
 
-This makes the application code easier to understand and maintain.
+This results in cleaner application logic and easier debugging.
 
 ---
 
-# 🏗️ Driver Architecture
+## Design Objectives
 
-The project follows a layered architecture.
+This project is built around the following principles:
 
-```text
-┌─────────────────────────────┐
-│        APPLICATION          │
-└──────────────┬──────────────┘
-               │
-┌──────────────▼──────────────┐
-│         MIDDLEWARE           │
-└──────────────┬──────────────┘
-               │
-┌──────────────▼──────────────┐
-│       DEVICE DRIVERS         │
-│                              │
-│ ADC │ IR │ PWM │ ULTRA       │
-│ LED │ SWITCH │ TIMER         │
-└──────────────┬──────────────┘
-               │
-┌──────────────▼──────────────┐
-│        GPIO / PERIPHERALS    │
-└──────────────┬──────────────┘
-               │
-┌──────────────▼──────────────┐
-│          ATmega2560          │
-└─────────────────────────────┘
-```
+- Modularity
+- Reusability
+- Hardware abstraction
+- Low-level register programming
+- Ease of maintenance
+- Better software structure for embedded systems
 
 ---
 
-# 📄 `.h` and `.c` Files
+## Why Driver-Based Development?
 
-Each driver is separated into two files.
-
-### Header file — `.h`
-
-Contains:
-
-- Function declarations
-- Macros
-- Constants
-- Configuration definitions
-
-Example:
-
-```c
-void timer_start(void);
-void timer_stop(void);
-```
-
-### Source file — `.c`
-
-Contains the actual implementation of the functions.
-
-```text
-.h → WHAT the driver provides
-.c → HOW the driver works
-```
-
-This separation improves modularity and maintainability.
-
----
-
-# 🎯 Design Goals
-
-The project is designed around:
-
-- **Modularity**
-- **Reusability**
-- **Hardware abstraction**
-- **Low-level register programming**
-- **Easy debugging**
-- **Easy maintenance**
-- **Separation of application and hardware code**
-
----
-
-# 🧠 Why Develop Drivers?
-
-Instead of writing hardware register operations repeatedly in application code:
-
-```c
-REGISTER = VALUE;
-```
-
-the application can use simple functions:
+Instead of writing register operations directly inside application logic, the code is organized into reusable functions:
 
 ```c
 led_on();
-timer_delay_ms(500);
+timer_delay_ms(1000);
 ultra_getDistance();
 ```
 
-This hides hardware-specific implementation details from the application.
+This reduces duplication and allows the application code to remain simpler, clearer, and easier to maintain.
 
 ---
 
-# 🛠️ Technologies
+## Technologies Used
 
-- **Microcontroller:** ATmega2560
-- **Language:** C / C++
-- **Development Environment:** Arduino IDE
-- **Architecture:** Modular Driver Architecture
-- **Hardware Access:** Direct Register Programming
+- Microcontroller: ATmega2560
+- Programming Language: C / C++
+- Development Focus: Bare-metal embedded driver development
+- Hardware Access: Direct register manipulation
+- Development Style: Layered embedded architecture
 
 ---
 
-# 🚀 Future Improvements
+## Hardware and Software Requirements
 
-Possible future improvements include:
+### Hardware
+- ATmega2560 development board
+- Required sensors or peripherals
+- Power source
+- Programming/debugging interface
 
-- Interrupt-based drivers
-- Non-blocking timer implementation
-- UART driver
+### Software
+- AVR-GCC toolchain
+- AVR programmer or compatible flashing tool
+- Text editor or IDE such as VS Code, Atmel Studio, or Arduino IDE
+
+---
+
+## Build and Flash Workflow
+
+This project is intended for embedded firmware development. The typical workflow is:
+
+1. Clone the repository
+2. Open the relevant driver files
+3. Compile the firmware using AVR-GCC
+4. Flash the compiled binary to the ATmega2560 board
+5. Run and validate peripheral behavior
+
+Example compilation flow:
+
+```bash
+git clone https://github.com/Pravinkumarvs/ATMEGA_2560.git
+cd ATMEGA_2560
+avr-gcc -mmcu=atmega2560 -Os -o main.elf <source files>
+avrdude -c <programmer> -p atmega2560 -U flash:w:main.elf
+```
+
+The exact build command may vary depending on the project setup and programmer used.
+
+---
+
+## Future Improvements
+
+Potential future enhancements include:
+
+- UART communication driver
 - SPI driver
 - I2C driver
 - LCD driver
 - Keypad driver
 - Motor driver
-- Improved sensor timeout handling
-- Error handling and status codes
-- More hardware validation and testing
+- Interrupt-driven peripherals
+- Better sensor calibration and filtering
+- More robust error handling
+- Unit testing for driver logic
 
 ---
 
-# 👨‍💻 Author
+## Author
 
-**Pravinkumar V S**
+Pravinkumar V S
 
-ATmega2560 Low-Level Driver Development Project
+Embedded systems and driver-development enthusiast working with the ATmega2560 platform.
 
 ---
 
-## ⭐ Project Philosophy
+## Project Philosophy
 
-> **Build the driver first, abstract the hardware, and keep the application simple.**
+> Build the driver first, abstract the hardware, and keep the application simple.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+## Contribution
+
+Contributions, improvements, and suggestions are welcome. If you want to extend the driver set or improve the structure, feel free to open an issue or submit a pull request.
